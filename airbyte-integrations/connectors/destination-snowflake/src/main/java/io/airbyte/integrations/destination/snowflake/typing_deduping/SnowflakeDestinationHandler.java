@@ -309,6 +309,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     // TODO will jackson deser handle the null -> false conversion for us?
     return new SnowflakeState(
         json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean(),
+        json.hasNonNull("finalTableNameUppercase") && json.get("finalTableNameUppercase").asBoolean(),
         json.hasNonNull("extractedAtInUtc") && json.get("extractedAtInUtc").asBoolean());
   }
 
