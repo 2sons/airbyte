@@ -55,9 +55,9 @@ public class SnowflakeV2TableMigrator implements Migration<SnowflakeState> {
   @NotNull
   @Override
   public MigrationResult<SnowflakeState> migrateIfNecessary(
-      @NotNull DestinationHandler<SnowflakeState> destinationHandler,
-      @NotNull StreamConfig streamConfig,
-      @NotNull DestinationInitialState<SnowflakeState> state) {
+                                                            @NotNull DestinationHandler<SnowflakeState> destinationHandler,
+                                                            @NotNull StreamConfig streamConfig,
+                                                            @NotNull DestinationInitialState<SnowflakeState> state) {
     final StreamId caseSensitiveStreamId = buildStreamId_caseSensitive(
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
@@ -97,9 +97,9 @@ public class SnowflakeV2TableMigrator implements Migration<SnowflakeState> {
           false,
           // Update the migration status to completed
           true,
-          state.destinationState().getExtractedAtInUtc()
-      );
-      // Invalidate the initial state - SnowflakeDestinationHandler will now be able to find the final tables
+          state.destinationState().getExtractedAtInUtc());
+      // Invalidate the initial state - SnowflakeDestinationHandler will now be able to find the final
+      // tables
       // so we need to refetch it.
       return new MigrationResult<>(updatedState, true);
     }

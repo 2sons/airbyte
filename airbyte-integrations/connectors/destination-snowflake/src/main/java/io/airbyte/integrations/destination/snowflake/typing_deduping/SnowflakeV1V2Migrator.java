@@ -50,8 +50,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefi
         state.getNeedsSoftReset(),
         true,
         state.getFinalTableNameUppercase(),
-        state.getExtractedAtInUtc()
-    );
+        state.getExtractedAtInUtc());
   }
 
   @SneakyThrows
@@ -124,4 +123,5 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefi
     // In v2 we preserve cases
     return super.doesValidV1RawTableExist(namespace.toUpperCase(), tableName.toUpperCase());
   }
+
 }

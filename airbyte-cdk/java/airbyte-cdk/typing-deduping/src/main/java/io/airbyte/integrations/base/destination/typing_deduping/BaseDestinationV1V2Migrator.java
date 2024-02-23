@@ -16,7 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition, DestinationState extends MinimumDestinationState> implements Migration<DestinationState> {
+public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition, DestinationState extends MinimumDestinationState>
+    implements Migration<DestinationState> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
@@ -31,9 +32,9 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition, Destin
   @NotNull
   @Override
   public MigrationResult<DestinationState> migrateIfNecessary(
-      @NotNull DestinationHandler<DestinationState> destinationHandler,
-      @NotNull StreamConfig streamConfig,
-      @NotNull DestinationInitialState<DestinationState> state) {
+                                                              @NotNull DestinationHandler<DestinationState> destinationHandler,
+                                                              @NotNull StreamConfig streamConfig,
+                                                              @NotNull DestinationInitialState<DestinationState> state) {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
