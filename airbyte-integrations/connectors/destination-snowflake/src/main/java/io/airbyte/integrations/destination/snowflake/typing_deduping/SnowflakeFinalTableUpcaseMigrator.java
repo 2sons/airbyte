@@ -26,9 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeV2TableMigrator implements Migration<SnowflakeState> {
+public class SnowflakeFinalTableUpcaseMigrator implements Migration<SnowflakeState> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeV2TableMigrator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeFinalTableUpcaseMigrator.class);
 
   private final JdbcDatabase database;
   private final String rawNamespace;
@@ -36,10 +36,10 @@ public class SnowflakeV2TableMigrator implements Migration<SnowflakeState> {
   private final SnowflakeSqlGenerator generator;
   private final SnowflakeDestinationHandler handler;
 
-  public SnowflakeV2TableMigrator(final JdbcDatabase database,
-                                  final String databaseName,
-                                  final SnowflakeSqlGenerator generator,
-                                  final SnowflakeDestinationHandler handler) {
+  public SnowflakeFinalTableUpcaseMigrator(final JdbcDatabase database,
+                                           final String databaseName,
+                                           final SnowflakeSqlGenerator generator,
+                                           final SnowflakeDestinationHandler handler) {
     this.database = database;
     this.databaseName = databaseName;
     this.generator = generator;
@@ -92,9 +92,11 @@ public class SnowflakeV2TableMigrator implements Migration<SnowflakeState> {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
+      // TODO switch this file to kotlin + use the copy() method
       final SnowflakeState updatedState = new SnowflakeState(
           // We don't need to trigger a soft reset here, because we've already done it.
           false,
+          state.destinationState().getV1V2MigrationDone(),
           // Update the migration status to completed
           true,
           state.destinationState().getExtractedAtInUtc());

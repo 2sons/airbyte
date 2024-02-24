@@ -79,7 +79,6 @@ public class DefaultTyperDeduperTest {
   private List<DestinationInitialState<MockState>> initialStates;
   private Map<StreamId, MockState> updatedStates;
 
-  private DestinationV1V2Migrator migrator;
   private TyperDeduper typerDeduper;
 
   private final Migration<MockState> MIGRATION_REQUIRING_SOFT_RESET = new Migration<>() {
@@ -168,14 +167,12 @@ public class DefaultTyperDeduperTest {
     updatedStates.put(APPEND_STREAM_CONFIG.id(), new MockState(false, false, true));
     updatedStates.put(DEDUPE_STREAM_CONFIG.id(), new MockState(false, false, true));
 
-    migrator = new NoOpDestinationV1V2Migrator();
-
     parsedCatalog = new ParsedCatalog(List.of(
         OVERWRITE_STREAM_CONFIG,
         APPEND_STREAM_CONFIG,
         DEDUPE_STREAM_CONFIG));
 
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, Collections.emptyList());
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, Collections.emptyList());
   }
 
   /**
@@ -436,7 +433,6 @@ public class DefaultTyperDeduperTest {
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
-        migrator,
         List.of(MIGRATION_REQUIRING_SOFT_RESET));
 
     // Notably: isSchemaMismatch = true,
@@ -512,7 +508,6 @@ public class DefaultTyperDeduperTest {
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
-        migrator,
         List.of(MIGRATION_REQUIRING_SOFT_RESET, MIGRATION_NOOP));
 
     when(destinationHandler.gatherInitialState(anyList()))
@@ -574,7 +569,6 @@ public class DefaultTyperDeduperTest {
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
-        migrator,
         List.of(MIGRATION_REQUIRING_SOFT_RESET, MIGRATION_NOT_REQUIRING_SOFT_RESET));
 
     when(destinationHandler.gatherInitialState(anyList()))

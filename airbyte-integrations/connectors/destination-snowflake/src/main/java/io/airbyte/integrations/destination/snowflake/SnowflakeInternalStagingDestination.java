@@ -20,19 +20,15 @@ import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationV1V2Migrator;
-import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
-import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeFinalTableUpcaseMigrator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.ExtractedAtUtcTimezoneMigration;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -50,7 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
+public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination<SnowflakeState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
   public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
@@ -171,25 +167,20 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
     final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName);
     parsedCatalog = catalogParser.parseCatalog(catalog);
-    // TODO after also refactoring bigquery, kill these classes entirely
-    final DestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
-    final V2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
     final List<Migration<SnowflakeState>> migrations = List.of(
         new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName, sqlGenerator),
-        new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler),
+        new SnowflakeFinalTableUpcaseMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler),
         new ExtractedAtUtcTimezoneMigration(database));
     if (disableTypeDedupe) {
       typerDeduper =
-          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
+          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrations);
     } else {
       typerDeduper =
           new DefaultTyperDeduper<>(
               sqlGenerator,
               snowflakeDestinationHandler,
               parsedCatalog,
-              migrator,
-              v2TableMigrator,
               migrations);
     }
 
